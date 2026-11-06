@@ -1,16 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0A2540">
-<title></title>الخبير العقاري </title>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>
+<title>الخبير العقاري</title>
 
 <!-- Tailwind + Fonts + Icons -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -111,7 +105,7 @@ tailwind.config = {
 <header id="siteHeader" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 transition-shadow">
   <div class="container mx-auto px-4 max-w-7xl">
     <div class="flex items-center justify-between h-20 gap-4">
-      
+
       <!-- Logo -->
       <a href="#" class="flex items-center gap-2.5 shrink-0">
         <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-navy to-royal flex items-center justify-center shadow-lg">
@@ -119,7 +113,6 @@ tailwind.config = {
         </div>
         <div class="hidden sm:block">
           <h1 class="text-lg font-black text-navy leading-tight">الخبير العقاري</h1>
-          <p class="text-[10px] text-gold font-bold">م /  </p>
         </div>
       </a>
 
@@ -143,13 +136,13 @@ tailwind.config = {
           <i class="fa-solid fa-user-plus"></i>
           <span>إنشاء حساب</span>
         </button>
-        
+
         <!-- User icon → opens drawer -->
         <button onclick="toggleUserDrawer()" id="userIconBtn" class="relative w-11 h-11 rounded-xl bg-navy hover:bg-royal text-white flex items-center justify-center transition shadow-md" title="حسابي">
           <i class="fa-solid fa-user text-sm"></i>
           <span id="userBadge" class="absolute -top-1 -right-1 bg-gold text-navy text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow hidden">!</span>
         </button>
-        
+
         <!-- Mobile menu -->
         <button onclick="toggleMobileNav()" class="lg:hidden w-11 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-navy flex items-center justify-center transition">
           <i class="fa-solid fa-bars"></i>
@@ -183,7 +176,7 @@ tailwind.config = {
         <i class="fa-solid fa-star"></i>
         <span>دليلك الأول للعقارات في المدن الجديدة</span>
       </div>
-      
+
       <h1 class="text-4xl md:text-6xl font-black text-white leading-tight mb-5">
         ابحث عن <span class="gold-text">عقارك المثالي</span><br>
         في بدر والشروق
@@ -381,9 +374,9 @@ tailwind.config = {
 
     <div class="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 md:p-12 max-w-3xl mx-auto">
       <i class="fa-solid fa-quote-right absolute top-6 left-6 text-6xl text-gold/20"></i>
-      
+
       <div id="reviewSliderBox" class="relative z-10 min-h-[140px]"></div>
-      
+
       <div class="flex items-center justify-between mt-6 pt-6 border-t border-white/20">
         <div class="flex gap-2">
           <button onclick="prevReview()" class="w-10 h-10 rounded-full bg-white/20 hover:bg-gold hover:text-navy text-white flex items-center justify-center transition"><i class="fa-solid fa-chevron-right text-sm"></i></button>
@@ -423,7 +416,6 @@ tailwind.config = {
           </div>
           <div>
             <h3 class="font-black text-white">الخبير العقاري</h3>
-            <p class="text-[11px] text-gold font-bold">م /  </p>
           </div>
         </div>
         <p class="text-sm leading-relaxed mb-4">خبرة واسعة في التسويق والاستثمار العقاري بمدينة بدر والشروق والمدن الجديدة.</p>
@@ -483,7 +475,7 @@ tailwind.config = {
 <div id="drawerBackdrop" onclick="toggleUserDrawer()" class="closed fixed inset-0 bg-navy/50 backdrop-blur-sm z-[60]"></div>
 
 <aside id="userDrawer" class="closed fixed top-0 right-0 h-full w-full sm:w-[420px] bg-white shadow-drawer z-[70] flex flex-col overflow-hidden">
-  
+
   <!-- Drawer Header -->
   <div class="bg-gradient-to-br from-navy to-royal text-white p-6 relative shrink-0">
     <button onclick="toggleUserDrawer()" class="absolute top-4 left-4 w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition">
@@ -517,7 +509,7 @@ tailwind.config = {
   </div>
 
   <div id="drawerLoggedIn" class="hidden flex-1 flex flex-col overflow-hidden">
-    
+
     <!-- Quick Stats -->
     <div class="grid grid-cols-3 gap-2 p-4 bg-slate-50 border-b border-slate-100 shrink-0">
       <div class="stat-tile !p-2">
@@ -568,7 +560,7 @@ tailwind.config = {
 
     <!-- Pages -->
     <div class="flex-1 overflow-y-auto p-4 bg-slate-50">
-      
+
       <!-- Dashboard -->
       <div id="dpage-dashboard" class="drawer-page active">
         <h4 class="font-black text-navy mb-3 flex items-center gap-2">
@@ -619,7 +611,7 @@ tailwind.config = {
           <i class="fa-solid fa-gear text-slate-600"></i>
           <span>إعدادات الحساب</span>
         </h4>
-        <form onsubmit="event.preventDefault(); showToast('تم حفظ البيانات ✔');" class="space-y-3">
+        <form onsubmit="saveProfile(event)" class="space-y-3">
           <div>
             <label class="block text-xs font-bold text-slate-600 mb-1">الاسم الكامل</label>
             <input type="text" id="pfName" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold" required>
@@ -700,29 +692,25 @@ tailwind.config = {
 <!-- ========== JAVASCRIPT ========== -->
 <!-- ============================================================ -->
 <script>
-/* ===== Firebase Init ===== */
-const firebaseConfig = {
-  apiKey: "AIzaSyBnyFEgU-LQggS5kKceH3_WeAaBsYzwqLo",
-  authDomain: "mostasharak-akaraty.firebaseapp.com",
-  databaseURL: "https://mostasharak-akaraty-default-rtdb.firebaseio.com",
-  projectId: "mostasharak-akaraty",
-  storageBucket: "mostasharak-akaraty.firebasestorage.app",
-  messagingSenderId: "287363939919",
-  appId: "1:287363939919:web:e53f13b518c6273043f43a"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
+/* ===== Storage helpers ===== */
+function readStore(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+  catch (e) { return fallback; }
+}
+function writeStore(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+}
 
 /* ===== State ===== */
 let allProperties = [];
-let wishlist = JSON.parse(localStorage.getItem('wishlist_v2') || '[]');
-let currentUser = null;
+let wishlist = readStore('wishlist_v2', []);
+let users = readStore('users_v1', []);
+let currentUser = readStore('currentUser_v1', null);
 let authMode = 'signup'; // 'signup' | 'login'
 let currentReviewIndex = 0;
 let reviewInterval = null;
 let reviewData = [
-  { name:'أحمد محمود', comment:'تعامل راقي جداً ومصداقية عالية مع البشمهندس . أنصح بالتعامل معه.' },
+  { name:'أحمد محمود', comment:'تعامل راقي جداً ومصداقية عالية مع الخبير العقاري. أنصح بالتعامل معهم.' },
   { name:'محمد عبد الرحمن', comment:'محترمين جداً وفاهمين السوق في الشروق وبدر كويس أوي. ساعدوني ألاقي شقة مناسبة في وقت قصير.' },
   { name:'سارة إبراهيم', comment:'خدمة ممتازة واستشارات دقيقة. اشتريت شقتي في بدر بسعر ممتاز عن طريقهم.' }
 ];
@@ -730,6 +718,54 @@ let reviewData = [
 /* ===== Demo Data ===== */
 const demoProperties = [
   {
+    key: 'p1', code:'B1', title:'شقة 140م سوبر لوكس بمدينة بدر',
+    price:'4,500 ج/شهر', priceValue: 4500, city:'مدينة بدر', type:'شقة', status:'إيجار',
+    area:140, rooms:3, bathrooms:2, views: 42, interested: 8,
+    desc:'شقة مميزة بمدينة بدر - الحي المتميز. 3 غرف + ريسبشن كبير + 2 حمام. تشطيب سوبر لوكس، أول سكن، قريبة من الجامعة الروسية والخدمات.',
+    images:['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80'],
+    featured: true
+  },
+  {
+    key: 'p2', code:'S5', title:'فيلا مستقلة 350م بالشروق',
+    price:'8,500,000 ج', priceValue: 8500000, city:'مدينة الشروق', type:'فيلا / دوبلكس', status:'تمليك',
+    area:350, rooms:5, bathrooms:4, views: 87, interested: 15,
+    desc:'فيلا مستقلة بتصميم عصري وحمام سباحة خاص. 5 غرف ماستر + حديقة + جراج. موقع متميز قريب من الخدمات.',
+    images:['https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80'],
+    featured: true
+  },
+  {
+    key: 'p3', code:'SH2', title:'محل تجاري 80م بمدينة بدر',
+    price:'12,000 ج/شهر', priceValue: 12000, city:'مدينة بدر', type:'محل تجاري', status:'إيجار',
+    area:80, rooms:0, bathrooms:1, views: 31, interested: 6,
+    desc:'محل تجاري بموقع حيوي جداً على الشارع الرئيسي. واجهة 8 متر + مخزن + حمام. مناسب لجميع الأنشطة التجارية.',
+    images:['https://images.unsplash.com/photo-1567449303078-57ad995bd17c?auto=format&fit=crop&w=1200&q=80'],
+    featured: true
+  },
+  {
+    key: 'p4', code:'L7', title:'أرض 500م للبيع بمدينة الشروق',
+    price:'6,000,000 ج', priceValue: 6000000, city:'مدينة الشروق', type:'أرض فاضية', status:'تمليك',
+    area:500, rooms:0, bathrooms:0, views: 55, interested: 11,
+    desc:'أرض سكنية بموقع متميز في الشروق. مستندات كاملة ومرخصة للبناء. واجهة 20 متر.',
+    images:['https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'],
+    featured: false
+  },
+  {
+    key: 'p5', code:'C9', title:'شقة 180م للبيع بالعبور',
+    price:'3,200,000 ج', priceValue: 3200000, city:'العبور', type:'شقة', status:'تمليك',
+    area:180, rooms:4, bathrooms:3, views: 63, interested: 9,
+    desc:'شقة واسعة بتشطيب كامل، 4 غرف + 2 ريسبشن + 3 حمام. سكن خاص، دور متكرر، موقع هادي.',
+    images:['https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80'],
+    featured: true
+  },
+  {
+    key: 'p6', code:'A3', title:'دوبلكس 220م بالعاصمة الإدارية',
+    price:'9,000,000 ج', priceValue: 9000000, city:'العاصمة الإدارية', type:'فيلا / دوبلكس', status:'تمليك',
+    area:220, rooms:4, bathrooms:4, views: 124, interested: 22,
+    desc:'دوبلكس راقي في الحي السكني بالعاصمة الإدارية. تشطيب فاخر، روف خاص، جراج، موقع متميز.',
+    images:['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80'],
+    featured: true
+  }
+];
 
 /* ===== Initialize ===== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -738,8 +774,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initReviews();
   initRevealObserver();
   initHeaderScroll();
-  tryLoadFromFirebase();
-  if (currentUser) updateDrawerUI();
+  updateDrawerUI();
 });
 
 /* ===== Header scroll shadow ===== */
@@ -763,20 +798,6 @@ function initRevealObserver() {
     });
   }, { threshold: 0.12 });
   els.forEach(e => io.observe(e));
-}
-
-/* ===== Firebase Load ===== */
-async function tryLoadFromFirebase() {
-  try {
-    const snap = await db.ref('properties').once('value');
-    const data = snap.val();
-    if (data && Object.keys(data).length > 0) {
-      allProperties = Object.keys(data).map(k => ({ key: k, ...data[k] }));
-      renderProperties();
-    }
-  } catch (e) {
-    console.warn('Firebase not available, using demo data');
-  }
 }
 
 /* ===== Render Properties ===== */
@@ -815,17 +836,17 @@ function renderProperties() {
     card.innerHTML = `
       <div class="relative h-56 overflow-hidden bg-slate-200">
         <img src="${img}" alt="${p.title}" class="prop-img w-full h-full object-cover">
-        
+
         <!-- Badges -->
         <span class="absolute top-3 right-3 ${statusColor} text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">${p.status}</span>
         <span class="absolute top-3 left-3 badge-gold text-xs font-black px-3 py-1.5 rounded-lg shadow-lg">كود: ${p.code}</span>
-        
+
         <!-- Favorite -->
-        <button onclick="event.stopPropagation(); toggleFavorite('${p.key}')" 
+        <button onclick="event.stopPropagation(); toggleFavorite('${p.key}')"
                 class="absolute bottom-3 left-3 w-10 h-10 rounded-full bg-white/95 hover:bg-white shadow-lg flex items-center justify-center transition hover:scale-110">
           <i class="fa-heart ${isFav ? 'fa-solid text-red-500' : 'fa-regular text-slate-700'}"></i>
         </button>
-        
+
         <!-- Location -->
         <span class="absolute bottom-3 right-3 bg-navy/90 text-gold text-xs font-bold px-3 py-1.5 rounded-lg">
           <i class="fa-solid fa-location-dot ml-1"></i>${p.city}
@@ -835,7 +856,7 @@ function renderProperties() {
       <div class="p-5">
         <h3 class="font-black text-navy text-lg mb-2 line-clamp-1 group-hover:text-royal transition">${p.title}</h3>
         <p class="text-royal font-black text-xl mb-3">${p.price}</p>
-        
+
         <div class="flex items-center gap-4 text-xs text-slate-500 border-t border-slate-100 pt-3">
           <span class="flex items-center gap-1"><i class="fa-solid fa-vector-square text-gold"></i>${p.area} م²</span>
           ${p.rooms ? `<span class="flex items-center gap-1"><i class="fa-solid fa-bed text-gold"></i>${p.rooms} غرف</span>` : ''}
@@ -877,7 +898,7 @@ function toggleFavorite(key) {
     wishlist.push(key);
     showToast('تم إضافة العقار للمفضلة ❤️');
   }
-  localStorage.setItem('wishlist_v2', JSON.stringify(wishlist));
+  writeStore('wishlist_v2', wishlist);
   renderProperties();
   updateDrawerUI();
 }
@@ -889,7 +910,7 @@ function openPropertyDetails(key) {
 
   const isFav = wishlist.includes(key);
   const img = p.images?.[0] || 'https://via.placeholder.com/800x500';
-  const waMsg = encodeURIComponent(`مرحباً م/ محمود، أنا مهتم بالعقار كود (${p.code}) - ${p.title}`);
+  const waMsg = encodeURIComponent(`مرحباً، أنا مهتم بالعقار كود (${p.code}) - ${p.title}`);
 
   document.getElementById('modalDetailsContent').innerHTML = `
     <div class="relative h-72 md:h-96 rounded-2xl overflow-hidden mb-5 bg-slate-200">
@@ -920,7 +941,7 @@ function openPropertyDetails(key) {
       <a href="tel:01070031535" class="bg-navy hover:bg-royal text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition">
         <i class="fa-solid fa-phone"></i> اتصال
       </a>
-      <button onclick="toggleFavorite('${key}'); this.innerHTML='<i class=\\'fa-heart ${isFav ? 'fa-regular' : 'fa-solid'} ml-1\\'></i>';" class="bg-gold hover:bg-gold-600 text-navy font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition">
+      <button onclick="toggleFavorite('${key}'); openPropertyDetails('${key}');" class="bg-gold hover:bg-gold-600 text-navy font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition">
         <i class="fa-heart ${isFav ? 'fa-solid' : 'fa-regular'}"></i> ${isFav ? 'في المفضلة' : 'حفظ'}
       </button>
     </div>
@@ -994,61 +1015,56 @@ function applyAuthMode() {
   document.getElementById('authPhone').required = isSignup;
 }
 
-async function handleAuth(e) {
+/* ===== Local accounts (stored in this browser only, no server) ===== */
+function hashPass(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return String(h);
+}
+
+function handleAuth(e) {
   e.preventDefault();
-  const email = document.getElementById('authEmail').value.trim();
+  const email = document.getElementById('authEmail').value.trim().toLowerCase();
   const password = document.getElementById('authPassword').value;
   const name = document.getElementById('authName').value.trim();
   const phone = document.getElementById('authPhone').value.trim();
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  submitBtn.disabled = true;
 
-  try {
-    if (authMode === 'signup') {
-      const cred = await auth.createUserWithEmailAndPassword(email, password);
-      await cred.user.updateProfile({ displayName: name });
-      await db.ref('users/' + cred.user.uid).set({
-        name, email, phone,
-        createdAt: new Date().toLocaleDateString('ar-EG'),
-        interested: []
-      });
-      showToast('تم إنشاء حسابك بنجاح! 🎉');
-    } else {
-      await auth.signInWithEmailAndPassword(email, password);
-      showToast('مرحباً بك مجدداً! 👋');
+  if (authMode === 'signup') {
+    if (users.some(u => u.email === email)) {
+      showToast('البريد مسجل بالفعل، جرب تسجيل الدخول');
+      return;
     }
-    closeAuthModal();
-  } catch (err) {
-    const msgs = {
-      'auth/email-already-in-use': 'البريد مسجل بالفعل، جرب تسجيل الدخول',
-      'auth/invalid-email': 'البريد الإلكتروني غير صحيح',
-      'auth/weak-password': 'كلمة المرور ضعيفة (6 أحرف على الأقل)',
-      'auth/invalid-credential': 'البريد أو كلمة المرور غير صحيحة',
-      'auth/network-request-failed': 'تحقق من الإنترنت'
-    };
-    showToast(msgs[err.code] || 'حدث خطأ، حاول مرة أخرى');
-  } finally {
-    submitBtn.disabled = false;
+    users.push({ name, email, phone, pass: hashPass(password) });
+    writeStore('users_v1', users);
+    currentUser = { name, email, phone };
+    showToast('تم إنشاء حسابك بنجاح! 🎉');
+  } else {
+    const u = users.find(x => x.email === email && x.pass === hashPass(password));
+    if (!u) {
+      showToast('البريد أو كلمة المرور غير صحيحة');
+      return;
+    }
+    currentUser = { name: u.name, email: u.email, phone: u.phone };
+    showToast('مرحباً بك مجدداً! 👋');
   }
+
+  writeStore('currentUser_v1', currentUser);
+  updateDrawerUI();
+  closeAuthModal();
+  e.target.reset();
 }
 
-/* ===== Auth State ===== */
-auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    const snap = await db.ref('users/' + user.uid).once('value');
-    const profile = snap.val() || {};
-    currentUser = {
-      uid: user.uid,
-      name: profile.name || user.displayName || 'مستخدم',
-      email: user.email || '',
-      phone: profile.phone || '',
-    };
-    updateDrawerUI();
-  } else {
-    currentUser = null;
-    updateDrawerUI();
-  }
-});
+function saveProfile(e) {
+  e.preventDefault();
+  if (!currentUser) return;
+  currentUser.name = document.getElementById('pfName').value.trim();
+  currentUser.phone = document.getElementById('pfPhone').value.trim();
+  const u = users.find(x => x.email === currentUser.email);
+  if (u) { u.name = currentUser.name; u.phone = currentUser.phone; writeStore('users_v1', users); }
+  writeStore('currentUser_v1', currentUser);
+  updateDrawerUI();
+  showToast('تم حفظ البيانات ✔');
+}
 
 /* ===== User Drawer ===== */
 function toggleUserDrawer() {
@@ -1081,15 +1097,15 @@ function updateDrawerUI() {
     document.getElementById('drawerName').textContent = currentUser.name;
     document.getElementById('drawerEmail').textContent = currentUser.email;
     document.getElementById('drawerAvatar').textContent = currentUser.name.charAt(0);
-    
+
     document.getElementById('pfName').value = currentUser.name;
     document.getElementById('pfPhone').value = currentUser.phone;
     document.getElementById('pfEmail').value = currentUser.email;
-    
+
     document.getElementById('statFav').textContent = wishlist.length;
     document.getElementById('favCountBadge').textContent = wishlist.length;
     document.getElementById('loginBtn')?.classList.add('hidden');
-    
+
     renderDrawerFavorites();
   } else {
     document.getElementById('drawerName').textContent = 'مرحباً بك';
@@ -1126,10 +1142,11 @@ function renderDrawerFavorites() {
 }
 
 function handleLogout() {
-  auth.signOut().then(() => {
-    toggleUserDrawer();
-    showToast('تم تسجيل الخروج بنجاح');
-  });
+  currentUser = null;
+  try { localStorage.removeItem('currentUser_v1'); } catch (e) {}
+  updateDrawerUI();
+  toggleUserDrawer();
+  showToast('تم تسجيل الخروج بنجاح');
 }
 
 /* ===== Toast ===== */
