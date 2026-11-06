@@ -1,0 +1,1209 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0A2540">
+<title></title>الخبير العقاري </title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>
+
+<!-- Tailwind + Fonts + Icons -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { cairo: ['Cairo', 'sans-serif'] },
+      colors: {
+        navy:   { DEFAULT:'#0A2540', 50:'#F0F4F8', 100:'#D9E2EC', 700:'#0F3A5F', 900:'#061A2C' },
+        royal:  { DEFAULT:'#1E3A8A', 600:'#1E40AF', 700:'#1D4ED8' },
+        gold:   { DEFAULT:'#D4AF37', 400:'#E8C766', 600:'#B8922E' },
+      },
+      boxShadow: {
+        card:  '0 1px 2px rgba(10,37,64,.04), 0 8px 24px rgba(10,37,64,.08)',
+        cardHover:'0 4px 12px rgba(10,37,64,.08), 0 24px 48px rgba(10,37,64,.16)',
+        drawer:'-8px 0 40px rgba(10,37,64,.2)',
+      }
+    }
+  }
+}
+</script>
+
+<style>
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body { font-family:'Cairo',sans-serif; background:#F8FAFC; color:#0A2540; -webkit-font-smoothing:antialiased; }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-thumb { background:#D4AF37; border-radius:3px; }
+
+  /* Hero gradient */
+  .hero-overlay {
+    background: linear-gradient(120deg, rgba(10,37,64,.88) 0%, rgba(10,37,64,.55) 55%, rgba(10,37,64,.25) 100%),
+                url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80') center/cover;
+  }
+  .gold-text { background: linear-gradient(135deg,#D4AF37,#F0D890); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+  /* Card hover */
+  .prop-card { transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s; }
+  .prop-card:hover { transform: translateY(-6px); box-shadow: 0 4px 12px rgba(10,37,64,.08), 0 24px 48px rgba(10,37,64,.16); }
+  .prop-card:hover .prop-img { transform: scale(1.08); }
+  .prop-img { transition: transform .8s cubic-bezier(.2,.7,.2,1); }
+
+  /* Fade-in on scroll */
+  .reveal { opacity:0; transform:translateY(28px); transition: opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in { opacity:1; transform:none; }
+  @media (prefers-reduced-motion:reduce){ .reveal{opacity:1;transform:none;} *{animation-duration:.01ms!important;transition-duration:.01ms!important;} }
+
+  /* Drawer (User Dashboard) */
+  #userDrawer { transition: transform .4s cubic-bezier(.2,.7,.2,1), opacity .3s; }
+  #userDrawer.closed { transform: translateX(100%); opacity:0; pointer-events:none; }
+  #drawerBackdrop { transition: opacity .3s; }
+  #drawerBackdrop.closed { opacity:0; pointer-events:none; }
+
+  /* Sidebar nav inside drawer */
+  .drawer-nav-btn { display:flex; align-items:center; gap:.7rem; padding:.7rem 1rem; border-radius:.75rem; font-weight:700; font-size:.875rem; color:#475569; transition: all .2s; cursor:pointer; }
+  .drawer-nav-btn:hover { background:#F0F4F8; color:#0A2540; }
+  .drawer-nav-btn.active { background: linear-gradient(90deg,#0A2540,#1E3A8A); color:#fff; box-shadow:0 4px 12px rgba(10,37,64,.25); }
+  .drawer-nav-btn.active i { color:#D4AF37; }
+
+  /* Drawer inner pages */
+  .drawer-page { display:none; animation: fadeSlide .35s cubic-bezier(.2,.7,.2,1); }
+  .drawer-page.active { display:block; }
+  @keyframes fadeSlide { from{opacity:0;transform:translateX(-14px);} to{opacity:1;transform:none;} }
+
+  /* Stats tile */
+  .stat-tile { background:#fff; border:1px solid #E2E8F0; border-radius:1rem; padding:1rem; text-align:center; transition: all .25s; }
+  .stat-tile:hover { border-color:#D4AF37; box-shadow:0 8px 24px rgba(212,175,55,.15); }
+
+  /* Search bar in hero */
+  .hero-search { background:rgba(255,255,255,.98); backdrop-filter: blur(12px); border:1px solid rgba(255,255,255,.4); }
+
+  /* Nav link underline */
+  .nav-link { position:relative; padding:.4rem 0; }
+  .nav-link::after { content:''; position:absolute; bottom:0; right:0; width:0; height:2px; background:#D4AF37; transition: width .3s; }
+  .nav-link:hover::after, .nav-link.active::after { width:100%; }
+
+  /* Mobile nav */
+  @media (max-width: 767px) {
+    input,select,textarea { font-size:16px !important; }
+  }
+
+  /* Modal */
+  .modal { position:fixed; inset:0; background:rgba(10,37,64,.7); backdrop-filter:blur(4px); z-index:100; display:flex; align-items:center; justify-content:center; padding:1rem; }
+  .modal.hidden { display:none; }
+  .modal > div { animation: modalPop .35s cubic-bezier(.2,.8,.2,1); }
+  @keyframes modalPop { from{opacity:0;transform:scale(.95) translateY(12px);} }
+
+  /* Badge */
+  .badge-gold { background:linear-gradient(135deg,#D4AF37,#E8C766); color:#0A2540; }
+</style>
+</head>
+<body class="font-cairo">
+
+<!-- ========== HEADER ========== -->
+<header id="siteHeader" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 transition-shadow">
+  <div class="container mx-auto px-4 max-w-7xl">
+    <div class="flex items-center justify-between h-20 gap-4">
+      
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2.5 shrink-0">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-navy to-royal flex items-center justify-center shadow-lg">
+          <i class="fa-solid fa-building-wheat text-gold text-xl"></i>
+        </div>
+        <div class="hidden sm:block">
+          <h1 class="text-lg font-black text-navy leading-tight">الخبير العقاري</h1>
+          <p class="text-[10px] text-gold font-bold">م /  </p>
+        </div>
+      </a>
+
+      <!-- Nav (Desktop) -->
+      <nav class="hidden lg:flex items-center gap-6 text-sm font-bold text-slate-600">
+        <a href="#" class="nav-link active text-navy">الرئيسية</a>
+        <a href="#properties" class="nav-link hover:text-navy">العقارات</a>
+        <a href="#categories" class="nav-link hover:text-navy">المشاريع</a>
+        <a href="#why-us" class="nav-link hover:text-navy">الخدمات</a>
+        <a href="#reviews" class="nav-link hover:text-navy">آراء العملاء</a>
+        <a href="#footer" class="nav-link hover:text-navy">اتصل بنا</a>
+      </nav>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-2 shrink-0">
+        <button onclick="openAuthModal()" id="loginBtn" class="hidden sm:flex items-center gap-1.5 text-sm font-bold text-navy hover:text-royal px-3 py-2">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>دخول</span>
+        </button>
+        <button onclick="openAuthModal(true)" class="hidden sm:flex items-center gap-1.5 bg-navy hover:bg-royal text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow-md transition">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>إنشاء حساب</span>
+        </button>
+        
+        <!-- User icon → opens drawer -->
+        <button onclick="toggleUserDrawer()" id="userIconBtn" class="relative w-11 h-11 rounded-xl bg-navy hover:bg-royal text-white flex items-center justify-center transition shadow-md" title="حسابي">
+          <i class="fa-solid fa-user text-sm"></i>
+          <span id="userBadge" class="absolute -top-1 -right-1 bg-gold text-navy text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow hidden">!</span>
+        </button>
+        
+        <!-- Mobile menu -->
+        <button onclick="toggleMobileNav()" class="lg:hidden w-11 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-navy flex items-center justify-center transition">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Nav -->
+    <nav id="mobileNav" class="hidden lg:hidden pb-4 border-t border-slate-100 pt-3">
+      <div class="grid grid-cols-2 gap-2 text-sm font-bold">
+        <a href="#" class="px-3 py-2.5 rounded-lg bg-slate-50 hover:bg-gold/20 text-navy">الرئيسية</a>
+        <a href="#properties" class="px-3 py-2.5 rounded-lg bg-slate-50 hover:bg-gold/20 text-navy">العقارات</a>
+        <a href="#categories" class="px-3 py-2.5 rounded-lg bg-slate-50 hover:bg-gold/20 text-navy">المشاريع</a>
+        <a href="#why-us" class="px-3 py-2.5 rounded-lg bg-slate-50 hover:bg-gold/20 text-navy">الخدمات</a>
+        <a href="#reviews" class="px-3 py-2.5 rounded-lg bg-slate-50 hover:bg-gold/20 text-navy">آراء العملاء</a>
+        <a href="#footer" class="px-3 py-2.5 rounded-lg bg-slate-50 hover:bg-gold/20 text-navy">اتصل بنا</a>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mt-2">
+        <button onclick="openAuthModal()" class="px-3 py-2.5 rounded-lg border-2 border-navy text-navy font-bold text-sm">دخول</button>
+        <button onclick="openAuthModal(true)" class="px-3 py-2.5 rounded-lg bg-navy text-white font-bold text-sm">إنشاء حساب</button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- ========== HERO ========== -->
+<section class="hero-overlay relative min-h-[640px] flex items-center py-16">
+  <div class="container mx-auto px-4 max-w-7xl relative z-10">
+    <div class="max-w-3xl">
+      <div class="inline-flex items-center gap-2 bg-gold/20 border border-gold/40 text-gold px-4 py-1.5 rounded-full text-xs font-bold mb-5 backdrop-blur-sm">
+        <i class="fa-solid fa-star"></i>
+        <span>دليلك الأول للعقارات في المدن الجديدة</span>
+      </div>
+      
+      <h1 class="text-4xl md:text-6xl font-black text-white leading-tight mb-5">
+        ابحث عن <span class="gold-text">عقارك المثالي</span><br>
+        في بدر والشروق
+      </h1>
+      <p class="text-lg md:text-xl text-slate-200 mb-8 max-w-xl leading-relaxed">
+        شقق، فلل، أراضي ومحلات تجارية بمواقع متميزة وأسعار تنافسية. استشارة مجانية مع خبير عقاري معتمد.
+      </p>
+
+      <!-- Advanced Search -->
+      <div class="hero-search rounded-2xl p-3 shadow-2xl max-w-3xl">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+          <select id="heroCity" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm font-semibold text-navy focus:outline-none focus:ring-2 focus:ring-gold">
+            <option value="all">كل المدن</option>
+            <option value="مدينة بدر">مدينة بدر</option>
+            <option value="مدينة الشروق">مدينة الشروق</option>
+            <option value="العبور">العبور</option>
+            <option value="العاصمة الإدارية">العاصمة الإدارية</option>
+            <option value="التجمع الخامس">التجمع الخامس</option>
+          </select>
+          <select id="heroType" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm font-semibold text-navy focus:outline-none focus:ring-2 focus:ring-gold">
+            <option value="all">نوع العقار</option>
+            <option value="شقة">شقة</option>
+            <option value="محل تجاري">محل تجاري</option>
+            <option value="أرض فاضية">أرض</option>
+            <option value="فيلا / دوبلكس">فيلا</option>
+          </select>
+          <select id="heroStatus" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm font-semibold text-navy focus:outline-none focus:ring-2 focus:ring-gold">
+            <option value="all">إيجار / تمليك</option>
+            <option value="إيجار">إيجار</option>
+            <option value="تمليك">تمليك</option>
+          </select>
+          <button onclick="heroSearch()" class="bg-gradient-to-r from-navy to-royal hover:from-royal hover:to-navy text-white font-bold rounded-xl px-4 py-3 flex items-center justify-center gap-2 shadow-lg transition">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>بحث</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Trust indicators -->
+      <div class="flex flex-wrap items-center gap-6 mt-8 text-white/90 text-sm">
+        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-gold"></i><span>+500 عميل سعيد</span></div>
+        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-gold"></i><span>+10 سنوات خبرة</span></div>
+        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-gold"></i><span>استشارة مجانية</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== CATEGORIES ========== -->
+<section id="categories" class="py-16 bg-white">
+  <div class="container mx-auto px-4 max-w-7xl">
+    <div class="text-center mb-12 reveal">
+      <span class="text-gold font-bold text-sm">تصفح حسب الفئة</span>
+      <h2 class="text-3xl md:text-4xl font-black text-navy mt-2 mb-3">ابحث عن نوع العقار</h2>
+      <p class="text-slate-500 max-w-xl mx-auto">اختر الفئة المناسبة لاحتياجك واكتشف أفضل الخيارات المتاحة</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div class="category-card reveal group bg-white border-2 border-slate-100 hover:border-gold rounded-2xl p-6 text-center cursor-pointer transition-all hover:shadow-cardHover" onclick="filterByType('شقة')">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-royal/10 group-hover:bg-gold/20 flex items-center justify-center mb-4 transition">
+          <i class="fa-solid fa-building text-3xl text-royal group-hover:text-gold transition"></i>
+        </div>
+        <h3 class="font-black text-navy">شقق سكنية</h3>
+        <p class="text-xs text-slate-500 mt-1" id="countShops">— متاح</p>
+      </div>
+
+      <div class="category-card reveal group bg-white border-2 border-slate-100 hover:border-gold rounded-2xl p-6 text-center cursor-pointer transition-all hover:shadow-cardHover" onclick="filterByType('فيلا / دوبلكس')">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-royal/10 group-hover:bg-gold/20 flex items-center justify-center mb-4 transition">
+          <i class="fa-solid fa-house-chimney text-3xl text-royal group-hover:text-gold transition"></i>
+        </div>
+        <h3 class="font-black text-navy">فلل ودوبلكس</h3>
+        <p class="text-xs text-slate-500 mt-1">— متاح</p>
+      </div>
+
+      <div class="category-card reveal group bg-white border-2 border-slate-100 hover:border-gold rounded-2xl p-6 text-center cursor-pointer transition-all hover:shadow-cardHover" onclick="filterByType('أرض فاضية')">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-royal/10 group-hover:bg-gold/20 flex items-center justify-center mb-4 transition">
+          <i class="fa-solid fa-map text-3xl text-royal group-hover:text-gold transition"></i>
+        </div>
+        <h3 class="font-black text-navy">أراضي</h3>
+        <p class="text-xs text-slate-500 mt-1">— متاح</p>
+      </div>
+
+      <div class="category-card reveal group bg-white border-2 border-slate-100 hover:border-gold rounded-2xl p-6 text-center cursor-pointer transition-all hover:shadow-cardHover" onclick="filterByType('محل تجاري')">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-royal/10 group-hover:bg-gold/20 flex items-center justify-center mb-4 transition">
+          <i class="fa-solid fa-store text-3xl text-royal group-hover:text-gold transition"></i>
+        </div>
+        <h3 class="font-black text-navy">محلات تجارية</h3>
+        <p class="text-xs text-slate-500 mt-1">— متاح</p>
+      </div>
+
+      <div class="category-card reveal group bg-white border-2 border-slate-100 hover:border-gold rounded-2xl p-6 text-center cursor-pointer transition-all hover:shadow-cardHover" onclick="filterByType('all')">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-royal/10 group-hover:bg-gold/20 flex items-center justify-center mb-4 transition">
+          <i class="fa-solid fa-border-all text-3xl text-royal group-hover:text-gold transition"></i>
+        </div>
+        <h3 class="font-black text-navy">جميع العقارات</h3>
+        <p class="text-xs text-slate-500 mt-1">— متاح</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== PROPERTIES ========== -->
+<section id="properties" class="py-16 bg-slate-50">
+  <div class="container mx-auto px-4 max-w-7xl">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-10 reveal">
+      <div>
+        <span class="text-gold font-bold text-sm">أحدث العروض</span>
+        <h2 class="text-3xl md:text-4xl font-black text-navy mt-2">عقارات مميزة</h2>
+        <p class="text-slate-500 mt-2">تصفح أفضل العقارات المتاحة في المدن الجديدة</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="text" id="searchCodeInput" oninput="renderProperties()" placeholder="ابحث بالكود..." class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold w-40">
+        <select id="filterCity" onchange="renderProperties()" class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-gold">
+          <option value="all">كل المدن</option>
+          <option value="مدينة بدر">مدينة بدر</option>
+          <option value="مدينة الشروق">مدينة الشروق</option>
+          <option value="العبور">العبور</option>
+          <option value="العاصمة الإدارية">العاصمة الإدارية</option>
+        </select>
+        <select id="filterType" onchange="renderProperties()" class="hidden">
+          <option value="all">الكل</option>
+          <option value="شقة">شقة</option>
+          <option value="محل تجاري">محل تجاري</option>
+          <option value="أرض فاضية">أرض</option>
+          <option value="فيلا / دوبلكس">فيلا</option>
+        </select>
+        <select id="filterStatus" onchange="renderProperties()" class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-gold">
+          <option value="all">الكل</option>
+          <option value="إيجار">إيجار</option>
+          <option value="تمليك">تمليك</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="propertiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <div id="emptyState" class="hidden text-center py-16">
+      <i class="fa-solid fa-house-circle-xmark text-6xl text-slate-300 mb-4"></i>
+      <p class="text-slate-500 font-bold">لا توجد عقارات مطابقة لبحثك</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== WHY US ========== -->
+<section id="why-us" class="py-16 bg-white">
+  <div class="container mx-auto px-4 max-w-7xl">
+    <div class="text-center mb-12 reveal">
+      <span class="text-gold font-bold text-sm">مميزاتنا</span>
+      <h2 class="text-3xl md:text-4xl font-black text-navy mt-2">لماذا تختارنا؟</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div class="reveal text-center p-6 rounded-2xl hover:bg-slate-50 transition">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-navy to-royal flex items-center justify-center mb-4 shadow-lg">
+          <i class="fa-solid fa-shield-halved text-2xl text-gold"></i>
+        </div>
+        <h3 class="font-black text-navy mb-2">أمان ومصداقية</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">جميع العقارات موثقة ومفحوصة قانونياً قبل العرض</p>
+      </div>
+
+      <div class="reveal text-center p-6 rounded-2xl hover:bg-slate-50 transition">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-navy to-royal flex items-center justify-center mb-4 shadow-lg">
+          <i class="fa-solid fa-handshake text-2xl text-gold"></i>
+        </div>
+        <h3 class="font-black text-navy mb-2">خبرة 10+ سنوات</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">خبرة واسعة في سوق العقارات بالمدن الجديدة</p>
+      </div>
+
+      <div class="reveal text-center p-6 rounded-2xl hover:bg-slate-50 transition">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-navy to-royal flex items-center justify-center mb-4 shadow-lg">
+          <i class="fa-solid fa-tags text-2xl text-gold"></i>
+        </div>
+        <h3 class="font-black text-navy mb-2">أفضل الأسعار</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">أسعار تنافسية وعروض حصرية لعملائنا</p>
+      </div>
+
+      <div class="reveal text-center p-6 rounded-2xl hover:bg-slate-50 transition">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-navy to-royal flex items-center justify-center mb-4 shadow-lg">
+          <i class="fa-solid fa-headset text-2xl text-gold"></i>
+        </div>
+        <h3 class="font-black text-navy mb-2">دعم 24/7</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">فريق متاح على مدار الساعة للرد على استفساراتك</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== REVIEWS ========== -->
+<section id="reviews" class="py-16 bg-gradient-to-br from-navy via-navy-700 to-royal text-white">
+  <div class="container mx-auto px-4 max-w-5xl">
+    <div class="text-center mb-12 reveal">
+      <span class="text-gold font-bold text-sm">ثقة عملائنا</span>
+      <h2 class="text-3xl md:text-4xl font-black mt-2">ماذا يقول عملاؤنا؟</h2>
+    </div>
+
+    <div class="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 md:p-12 max-w-3xl mx-auto">
+      <i class="fa-solid fa-quote-right absolute top-6 left-6 text-6xl text-gold/20"></i>
+      
+      <div id="reviewSliderBox" class="relative z-10 min-h-[140px]"></div>
+      
+      <div class="flex items-center justify-between mt-6 pt-6 border-t border-white/20">
+        <div class="flex gap-2">
+          <button onclick="prevReview()" class="w-10 h-10 rounded-full bg-white/20 hover:bg-gold hover:text-navy text-white flex items-center justify-center transition"><i class="fa-solid fa-chevron-right text-sm"></i></button>
+          <button onclick="nextReview()" class="w-10 h-10 rounded-full bg-white/20 hover:bg-gold hover:text-navy text-white flex items-center justify-center transition"><i class="fa-solid fa-chevron-left text-sm"></i></button>
+        </div>
+        <span id="reviewCounterText" class="text-sm text-gold font-bold"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== CTA / Newsletter ========== -->
+<section class="py-16 bg-gold">
+  <div class="container mx-auto px-4 max-w-4xl text-center">
+    <div class="reveal">
+      <i class="fa-solid fa-envelope-open-text text-5xl text-navy mb-4"></i>
+      <h2 class="text-3xl md:text-4xl font-black text-navy mb-3">اشترك في نشرتنا العقارية</h2>
+      <p class="text-navy/80 mb-6 max-w-xl mx-auto">كن أول من يعرف بأحدث العقارات والعروض الحصرية في المدن الجديدة</p>
+      <form onsubmit="event.preventDefault(); showToast('تم اشتراكك بنجاح! ستصلك أحدث العروض.');" class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+        <input type="email" required placeholder="بريدك الإلكتروني" class="flex-1 bg-white border-0 rounded-xl px-5 py-3.5 text-navy font-semibold focus:outline-none focus:ring-2 focus:ring-navy">
+        <button type="submit" class="bg-navy hover:bg-navy-900 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg transition whitespace-nowrap">
+          <i class="fa-solid fa-paper-plane ml-1"></i> اشترك
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer id="footer" class="bg-navy text-slate-300 pt-16 pb-6">
+  <div class="container mx-auto px-4 max-w-7xl">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+      <div>
+        <div class="flex items-center gap-2.5 mb-4">
+          <div class="w-11 h-11 rounded-xl bg-gold flex items-center justify-center">
+            <i class="fa-solid fa-building-wheat text-navy text-xl"></i>
+          </div>
+          <div>
+            <h3 class="font-black text-white">الخبير العقاري</h3>
+            <p class="text-[11px] text-gold font-bold">م /  </p>
+          </div>
+        </div>
+        <p class="text-sm leading-relaxed mb-4">خبرة واسعة في التسويق والاستثمار العقاري بمدينة بدر والشروق والمدن الجديدة.</p>
+        <div class="flex gap-2">
+          <a href="https://wa.me/201070031535" target="_blank" class="w-10 h-10 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="https://www.facebook.com/share/1JfpJ2n8FF/" target="_blank" class="w-10 h-10 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="tel:01070031535" class="w-10 h-10 rounded-lg bg-gold hover:bg-gold-600 text-navy flex items-center justify-center transition"><i class="fa-solid fa-phone"></i></a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="font-black text-white mb-4">روابط سريعة</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-gold transition">الرئيسية</a></li>
+          <li><a href="#properties" class="hover:text-gold transition">العقارات</a></li>
+          <li><a href="#categories" class="hover:text-gold transition">التصنيفات</a></li>
+          <li><a href="#why-us" class="hover:text-gold transition">من نحن</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-black text-white mb-4">خدماتنا</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:text-gold transition">بيع وشراء العقارات</a></li>
+          <li><a href="#" class="hover:text-gold transition">إيجار العقارات</a></li>
+          <li><a href="#" class="hover:text-gold transition">استشارات عقارية</a></li>
+          <li><a href="#" class="hover:text-gold transition">تقييم العقارات</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-black text-white mb-4">تواصل معنا</h4>
+        <ul class="space-y-3 text-sm">
+          <li class="flex items-center gap-2"><i class="fa-solid fa-phone text-gold w-4"></i><span dir="ltr">01070031535</span></li>
+          <li class="flex items-center gap-2"><i class="fa-solid fa-envelope text-gold w-4"></i><span>mahmoud.akarat@gmail.com</span></li>
+          <li class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-gold w-4"></i><span>مدينة بدر، القاهرة</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+      <p>جميع الحقوق محفوظة © 2026 - الخبير العقاري</p>
+      <p>تصميم وبرمجة: <span class="text-gold font-bold">م / أحمد سمير</span></p>
+    </div>
+  </div>
+</footer>
+
+<!-- Floating buttons -->
+<a href="https://wa.me/201070031535" target="_blank" class="fixed right-4 bottom-5 z-50 w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center text-2xl shadow-2xl transition hover:scale-110">
+  <i class="fa-brands fa-whatsapp"></i>
+</a>
+
+<!-- ============================================================ -->
+<!-- ========== USER DRAWER (Dashboard) ========== -->
+<!-- ============================================================ -->
+
+<div id="drawerBackdrop" onclick="toggleUserDrawer()" class="closed fixed inset-0 bg-navy/50 backdrop-blur-sm z-[60]"></div>
+
+<aside id="userDrawer" class="closed fixed top-0 right-0 h-full w-full sm:w-[420px] bg-white shadow-drawer z-[70] flex flex-col overflow-hidden">
+  
+  <!-- Drawer Header -->
+  <div class="bg-gradient-to-br from-navy to-royal text-white p-6 relative shrink-0">
+    <button onclick="toggleUserDrawer()" class="absolute top-4 left-4 w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <div class="flex items-center gap-3 mt-2">
+      <div class="relative">
+        <div id="drawerAvatar" class="w-16 h-16 rounded-2xl bg-gold text-navy font-black text-2xl flex items-center justify-center shadow-lg">أ</div>
+        <span class="absolute -bottom-1 -left-1 bg-emerald-500 w-4 h-4 rounded-full border-2 border-white"></span>
+      </div>
+      <div class="min-w-0">
+        <h3 id="drawerName" class="font-black text-lg truncate">مرحباً بك</h3>
+        <p id="drawerEmail" class="text-xs text-gold truncate">سجل دخولك للوصول لحسابك</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer Body -->
+  <div id="drawerLoggedOut" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+    <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+      <i class="fa-solid fa-user text-3xl text-slate-400"></i>
+    </div>
+    <h4 class="font-black text-navy mb-2">سجل دخولك للوصول لحسابك</h4>
+    <p class="text-sm text-slate-500 mb-6 max-w-xs">احفظ عقاراتك المفضلة وتابع استفساراتك وتواصل مع الإدارة</p>
+    <button onclick="closeDrawerAndAuth()" class="w-full bg-gradient-to-r from-navy to-royal text-white font-bold py-3 rounded-xl shadow-lg transition mb-2">
+      <i class="fa-solid fa-right-to-bracket ml-1"></i> تسجيل الدخول
+    </button>
+    <button onclick="closeDrawerAndAuth(true)" class="w-full bg-gold text-navy font-bold py-3 rounded-xl shadow-lg transition">
+      <i class="fa-solid fa-user-plus ml-1"></i> إنشاء حساب جديد
+    </button>
+  </div>
+
+  <div id="drawerLoggedIn" class="hidden flex-1 flex flex-col overflow-hidden">
+    
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-3 gap-2 p-4 bg-slate-50 border-b border-slate-100 shrink-0">
+      <div class="stat-tile !p-2">
+        <i class="fa-solid fa-heart text-red-500 text-sm block mb-1"></i>
+        <b id="statFav" class="text-navy font-black text-lg">0</b>
+        <span class="text-[10px] text-slate-500 block">المفضلة</span>
+      </div>
+      <div class="stat-tile !p-2">
+        <i class="fa-solid fa-comments text-royal text-sm block mb-1"></i>
+        <b id="statInquiries" class="text-navy font-black text-lg">0</b>
+        <span class="text-[10px] text-slate-500 block">استفسارات</span>
+      </div>
+      <div class="stat-tile !p-2">
+        <i class="fa-solid fa-eye text-emerald-500 text-sm block mb-1"></i>
+        <b id="statViewed" class="text-navy font-black text-lg">0</b>
+        <span class="text-[10px] text-slate-500 block">مشاهدات</span>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="p-3 border-b border-slate-100 shrink-0 overflow-y-auto max-h-[260px]">
+      <div class="drawer-nav-btn active" onclick="switchDrawerPage('dashboard', this)">
+        <i class="fa-solid fa-gauge-high w-5"></i>
+        <span>لوحة التحكم</span>
+      </div>
+      <div class="drawer-nav-btn" onclick="switchDrawerPage('favorites', this)">
+        <i class="fa-solid fa-heart w-5"></i>
+        <span>عقاراتي المفضلة</span>
+        <span id="favCountBadge" class="mr-auto bg-gold text-navy text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
+      </div>
+      <div class="drawer-nav-btn" onclick="switchDrawerPage('inquiries', this)">
+        <i class="fa-solid fa-comments w-5"></i>
+        <span>استفساراتي / طلباتي</span>
+      </div>
+      <div class="drawer-nav-btn" onclick="switchDrawerPage('viewed', this)">
+        <i class="fa-solid fa-clock-rotate-left w-5"></i>
+        <span>شوهدت مؤخراً</span>
+      </div>
+      <div class="drawer-nav-btn" onclick="switchDrawerPage('settings', this)">
+        <i class="fa-solid fa-gear w-5"></i>
+        <span>إعدادات الحساب</span>
+      </div>
+      <div class="drawer-nav-btn text-red-600 hover:!bg-red-50 hover:!text-red-700" onclick="handleLogout()">
+        <i class="fa-solid fa-right-from-bracket w-5"></i>
+        <span>تسجيل الخروج</span>
+      </div>
+    </nav>
+
+    <!-- Pages -->
+    <div class="flex-1 overflow-y-auto p-4 bg-slate-50">
+      
+      <!-- Dashboard -->
+      <div id="dpage-dashboard" class="drawer-page active">
+        <h4 class="font-black text-navy mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-bell text-gold"></i>
+          <span>أحدث الإشعارات</span>
+        </h4>
+        <div id="drawerNotifications" class="space-y-2">
+          <div class="text-center text-sm text-slate-400 py-8">لا توجد إشعارات جديدة</div>
+        </div>
+      </div>
+
+      <!-- Favorites -->
+      <div id="dpage-favorites" class="drawer-page">
+        <h4 class="font-black text-navy mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-heart text-red-500"></i>
+          <span>عقاراتي المفضلة</span>
+        </h4>
+        <div id="drawerFavoritesList" class="space-y-2">
+          <div class="text-center text-sm text-slate-400 py-8">لم تضف أي عقارات للمفضلة بعد</div>
+        </div>
+      </div>
+
+      <!-- Inquiries -->
+      <div id="dpage-inquiries" class="drawer-page">
+        <h4 class="font-black text-navy mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-comments text-royal"></i>
+          <span>استفساراتي / طلباتي</span>
+        </h4>
+        <div id="drawerInquiriesList" class="space-y-2">
+          <div class="text-center text-sm text-slate-400 py-8">لا توجد استفسارات بعد</div>
+        </div>
+      </div>
+
+      <!-- Viewed -->
+      <div id="dpage-viewed" class="drawer-page">
+        <h4 class="font-black text-navy mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left text-emerald-500"></i>
+          <span>شوهدت مؤخراً</span>
+        </h4>
+        <div id="drawerViewedList" class="space-y-2">
+          <div class="text-center text-sm text-slate-400 py-8">لم تشاهد أي عقارات بعد</div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div id="dpage-settings" class="drawer-page">
+        <h4 class="font-black text-navy mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-gear text-slate-600"></i>
+          <span>إعدادات الحساب</span>
+        </h4>
+        <form onsubmit="event.preventDefault(); showToast('تم حفظ البيانات ✔');" class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">الاسم الكامل</label>
+            <input type="text" id="pfName" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold" required>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">رقم الهاتف</label>
+            <input type="tel" id="pfPhone" dir="ltr" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold" required>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">البريد الإلكتروني</label>
+            <input type="email" id="pfEmail" dir="ltr" readonly class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-slate-100 text-slate-500">
+          </div>
+          <button type="submit" class="w-full bg-gradient-to-r from-navy to-royal text-white font-bold py-3 rounded-xl shadow-lg">
+            <i class="fa-solid fa-floppy-disk ml-1"></i> حفظ التغييرات
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</aside>
+
+<!-- ========== AUTH MODAL ========== -->
+<div id="authModal" class="modal hidden">
+  <div class="bg-white rounded-3xl max-w-md w-full p-8 relative shadow-2xl">
+    <button onclick="closeAuthModal()" class="absolute top-4 left-4 w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-400 flex items-center justify-center transition">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-navy to-royal flex items-center justify-center mb-3 shadow-lg">
+        <i class="fa-solid fa-user text-gold text-2xl"></i>
+      </div>
+      <h3 id="authTitle" class="text-2xl font-black text-navy">إنشاء حساب جديد</h3>
+      <p class="text-sm text-slate-500 mt-1">سجل بياناتك للوصول لخدماتنا</p>
+    </div>
+    <form onsubmit="handleAuth(event)" class="space-y-3">
+      <div id="authNameField">
+        <label class="block text-xs font-bold text-slate-700 mb-1">الاسم الكامل *</label>
+        <input type="text" id="authName" required placeholder="أحمد سمير" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">البريد الإلكتروني *</label>
+        <input type="email" id="authEmail" required dir="ltr" placeholder="example@gmail.com" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold">
+      </div>
+      <div id="authPhoneField">
+        <label class="block text-xs font-bold text-slate-700 mb-1">رقم الهاتف *</label>
+        <input type="tel" id="authPhone" required dir="ltr" placeholder="010xxxxxxxx" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور *</label>
+        <input type="password" id="authPassword" required minlength="6" dir="ltr" placeholder="6 أحرف على الأقل" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold">
+      </div>
+      <button type="submit" class="w-full bg-gradient-to-r from-navy to-royal text-white font-bold py-3.5 rounded-xl shadow-lg">
+        <span id="authSubmitText">إنشاء الحساب</span>
+      </button>
+      <p class="text-center text-xs text-slate-500">
+        <span id="authModeText">لديك حساب بالفعل؟</span>
+        <button type="button" onclick="toggleAuthMode()" class="text-royal font-bold hover:underline mr-1">تسجيل الدخول</button>
+      </p>
+    </form>
+  </div>
+</div>
+
+<!-- ========== PROPERTY DETAILS MODAL ========== -->
+<div id="propertyDetailsModal" class="modal hidden !items-start overflow-y-auto">
+  <div class="bg-white rounded-3xl max-w-3xl w-full p-6 md:p-8 my-8 relative">
+    <button onclick="closeDetailsModal()" class="absolute top-4 left-4 w-10 h-10 rounded-full bg-slate-100 hover:bg-red-100 text-slate-500 hover:text-red-600 flex items-center justify-center transition z-20">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <div id="modalDetailsContent"></div>
+  </div>
+</div>
+
+<!-- ========== TOAST ========== -->
+<div id="toastContainer" class="fixed top-20 left-4 z-[110] flex flex-col gap-2 max-w-sm pointer-events-none"></div>
+
+<!-- ============================================================ -->
+<!-- ========== JAVASCRIPT ========== -->
+<!-- ============================================================ -->
+<script>
+/* ===== Firebase Init ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyBnyFEgU-LQggS5kKceH3_WeAaBsYzwqLo",
+  authDomain: "mostasharak-akaraty.firebaseapp.com",
+  databaseURL: "https://mostasharak-akaraty-default-rtdb.firebaseio.com",
+  projectId: "mostasharak-akaraty",
+  storageBucket: "mostasharak-akaraty.firebasestorage.app",
+  messagingSenderId: "287363939919",
+  appId: "1:287363939919:web:e53f13b518c6273043f43a"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+/* ===== State ===== */
+let allProperties = [];
+let wishlist = JSON.parse(localStorage.getItem('wishlist_v2') || '[]');
+let currentUser = null;
+let authMode = 'signup'; // 'signup' | 'login'
+let currentReviewIndex = 0;
+let reviewInterval = null;
+let reviewData = [
+  { name:'أحمد محمود', comment:'تعامل راقي جداً ومصداقية عالية مع البشمهندس . أنصح بالتعامل معه.' },
+  { name:'محمد عبد الرحمن', comment:'محترمين جداً وفاهمين السوق في الشروق وبدر كويس أوي. ساعدوني ألاقي شقة مناسبة في وقت قصير.' },
+  { name:'سارة إبراهيم', comment:'خدمة ممتازة واستشارات دقيقة. اشتريت شقتي في بدر بسعر ممتاز عن طريقهم.' }
+];
+
+/* ===== Demo Data ===== */
+const demoProperties = [
+  {
+    key: 'p1', code:'B1', title:'شقة 140م سوبر لوكس بمدينة بدر',
+    price:'4,500 ج/شهر', priceValue: 4500, city:'مدينة بدر', type:'شقة', status:'إيجار',
+    area:140, rooms:3, bathrooms:2, views: 42, interested: 8,
+    desc:'شقة مميزة بمدينة بدر - الحي المتميز. 3 غرف + ريسبشن كبير + 2 حمام. تشطيب سوبر لوكس، أول سكن، قريبة من الجامعة الروسية والخدمات.',
+    images:['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80'],
+    featured: true
+  },
+  {
+    key: 'p2', code:'S5', title:'فيلا مستقلة 350م بالشروق',
+    price:'8,500,000 ج', priceValue: 8500000, city:'مدينة الشروق', type:'فيلا / دوبلكس', status:'تمليك',
+    area:350, rooms:5, bathrooms:4, views: 87, interested: 15,
+    desc:'فيلا مستقلة بتصميم عصري وحمام سباحة خاص. 5 غرف ماستر + حديقة + جراج. موقع متميز قريب من الخدمات.',
+    images:['https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80'],
+    featured: true
+  },
+  {
+    key: 'p3', code:'SH2', title:'محل تجاري 80م بمدينة بدر',
+    price:'12,000 ج/شهر', priceValue: 12000, city:'مدينة بدر', type:'محل تجاري', status:'إيجار',
+    area:80, rooms:0, bathrooms:1, views: 31, interested: 6,
+    desc:'محل تجاري بموقع حيوي جداً على الشارع الرئيسي. واجهة 8 متر + مخزن + حمام. مناسب لجميع الأنشطة التجارية.',
+    images:['https://images.unsplash.com/photo-1567449303078-57ad995bd17c?auto=format&fit=crop&w=1200&q=80'],
+    featured: true
+  },
+  {
+    key: 'p4', code:'L7', title:'أرض 500م للبيع بمدينة الشروق',
+    price:'6,000,000 ج', priceValue: 6000000, city:'مدينة الشروق', type:'أرض فاضية', status:'تمليك',
+    area:500, rooms:0, bathrooms:0, views: 55, interested: 11,
+    desc:'أرض سكنية بموقع متميز في الشروق. مستندات كاملة ومرخصة للبناء. واجهة 20 متر.',
+    images:['https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'],
+    featured: false
+  },
+  {
+    key: 'p5', code:'C9', title:'شقة 180م للبيع بالعبور',
+    price:'3,200,000 ج', priceValue: 3200000, city:'العبور', type:'شقة', status:'تمليك',
+    area:180, rooms:4, bathrooms:3, views: 63, interested: 9,
+    desc:'شقة واسعة بتشطيب كامل، 4 غرف + 2 ريسبشن + 3 حمام. سكن خاص، دور متكرر، موقع هادي.',
+    images:['https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80'],
+    featured: true
+  },
+  {
+    key: 'p6', code:'A3', title:'دوبلكس 220م بالعاصمة الإدارية',
+    price:'9,000,000 ج', priceValue: 9000000, city:'العاصمة الإدارية', type:'فيلا / دوبلكس', status:'تمليك',
+    area:220, rooms:4, bathrooms:4, views: 124, interested: 22,
+    desc:'دوبلكس راقي في الحي السكني بالعاصمة الإدارية. تشطيب فاخر، روف خاص، جراج، موقع متميز.',
+    images:['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80'],
+    featured: true
+  }
+];
+
+/* ===== Initialize ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  allProperties = [...demoProperties];
+  renderProperties();
+  initReviews();
+  initRevealObserver();
+  initHeaderScroll();
+  tryLoadFromFirebase();
+  if (currentUser) updateDrawerUI();
+});
+
+/* ===== Header scroll shadow ===== */
+function initHeaderScroll() {
+  const header = document.getElementById('siteHeader');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('shadow-lg', window.scrollY > 10);
+  }, { passive: true });
+}
+
+/* ===== Reveal on scroll ===== */
+function initRevealObserver() {
+  const els = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) {
+    els.forEach(e => e.classList.add('in'));
+    return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  els.forEach(e => io.observe(e));
+}
+
+/* ===== Firebase Load ===== */
+async function tryLoadFromFirebase() {
+  try {
+    const snap = await db.ref('properties').once('value');
+    const data = snap.val();
+    if (data && Object.keys(data).length > 0) {
+      allProperties = Object.keys(data).map(k => ({ key: k, ...data[k] }));
+      renderProperties();
+    }
+  } catch (e) {
+    console.warn('Firebase not available, using demo data');
+  }
+}
+
+/* ===== Render Properties ===== */
+function renderProperties() {
+  const grid = document.getElementById('propertiesGrid');
+  const empty = document.getElementById('emptyState');
+  const searchCode = (document.getElementById('searchCodeInput')?.value || '').toUpperCase();
+  const city = document.getElementById('filterCity')?.value || 'all';
+  const type = document.getElementById('filterType')?.value || 'all';
+  const status = document.getElementById('filterStatus')?.value || 'all';
+
+  const filtered = allProperties.filter(p => {
+    if (searchCode && !(p.code || '').toUpperCase().includes(searchCode)) return false;
+    if (city !== 'all' && p.city !== city) return false;
+    if (type !== 'all' && p.type !== type) return false;
+    if (status !== 'all' && p.status !== status) return false;
+    return true;
+  });
+
+  grid.innerHTML = '';
+
+  if (filtered.length === 0) {
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  filtered.forEach(p => {
+    const isFav = wishlist.includes(p.key);
+    const statusColor = p.status === 'إيجار' ? 'bg-royal' : 'bg-emerald-600';
+    const img = p.images?.[0] || 'https://via.placeholder.com/600x400?text=Property';
+
+    const card = document.createElement('article');
+    card.className = 'prop-card bg-white rounded-2xl overflow-hidden shadow-card cursor-pointer group';
+    card.onclick = () => openPropertyDetails(p.key);
+    card.innerHTML = `
+      <div class="relative h-56 overflow-hidden bg-slate-200">
+        <img src="${img}" alt="${p.title}" class="prop-img w-full h-full object-cover">
+        
+        <!-- Badges -->
+        <span class="absolute top-3 right-3 ${statusColor} text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">${p.status}</span>
+        <span class="absolute top-3 left-3 badge-gold text-xs font-black px-3 py-1.5 rounded-lg shadow-lg">كود: ${p.code}</span>
+        
+        <!-- Favorite -->
+        <button onclick="event.stopPropagation(); toggleFavorite('${p.key}')" 
+                class="absolute bottom-3 left-3 w-10 h-10 rounded-full bg-white/95 hover:bg-white shadow-lg flex items-center justify-center transition hover:scale-110">
+          <i class="fa-heart ${isFav ? 'fa-solid text-red-500' : 'fa-regular text-slate-700'}"></i>
+        </button>
+        
+        <!-- Location -->
+        <span class="absolute bottom-3 right-3 bg-navy/90 text-gold text-xs font-bold px-3 py-1.5 rounded-lg">
+          <i class="fa-solid fa-location-dot ml-1"></i>${p.city}
+        </span>
+      </div>
+
+      <div class="p-5">
+        <h3 class="font-black text-navy text-lg mb-2 line-clamp-1 group-hover:text-royal transition">${p.title}</h3>
+        <p class="text-royal font-black text-xl mb-3">${p.price}</p>
+        
+        <div class="flex items-center gap-4 text-xs text-slate-500 border-t border-slate-100 pt-3">
+          <span class="flex items-center gap-1"><i class="fa-solid fa-vector-square text-gold"></i>${p.area} م²</span>
+          ${p.rooms ? `<span class="flex items-center gap-1"><i class="fa-solid fa-bed text-gold"></i>${p.rooms} غرف</span>` : ''}
+          ${p.bathrooms ? `<span class="flex items-center gap-1"><i class="fa-solid fa-bath text-gold"></i>${p.bathrooms} حمام</span>` : ''}
+          <span class="mr-auto flex items-center gap-1"><i class="fa-solid fa-eye text-royal"></i>${p.views || 0}</span>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+/* ===== Filter by type (categories) ===== */
+function filterByType(type) {
+  document.getElementById('filterType').value = type;
+  renderProperties();
+  document.getElementById('properties').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ===== Hero Search ===== */
+function heroSearch() {
+  const city = document.getElementById('heroCity').value;
+  const type = document.getElementById('heroType').value;
+  const status = document.getElementById('heroStatus').value;
+  document.getElementById('filterCity').value = city;
+  document.getElementById('filterType').value = type;
+  document.getElementById('filterStatus').value = status;
+  renderProperties();
+  document.getElementById('properties').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ===== Favorite ===== */
+function toggleFavorite(key) {
+  const idx = wishlist.indexOf(key);
+  if (idx > -1) {
+    wishlist.splice(idx, 1);
+    showToast('تم إزالة العقار من المفضلة');
+  } else {
+    wishlist.push(key);
+    showToast('تم إضافة العقار للمفضلة ❤️');
+  }
+  localStorage.setItem('wishlist_v2', JSON.stringify(wishlist));
+  renderProperties();
+  updateDrawerUI();
+}
+
+/* ===== Open Property Details ===== */
+function openPropertyDetails(key) {
+  const p = allProperties.find(x => x.key === key);
+  if (!p) return;
+
+  const isFav = wishlist.includes(key);
+  const img = p.images?.[0] || 'https://via.placeholder.com/800x500';
+  const waMsg = encodeURIComponent(`مرحباً م/ محمود، أنا مهتم بالعقار كود (${p.code}) - ${p.title}`);
+
+  document.getElementById('modalDetailsContent').innerHTML = `
+    <div class="relative h-72 md:h-96 rounded-2xl overflow-hidden mb-5 bg-slate-200">
+      <img src="${img}" class="w-full h-full object-cover">
+      <span class="absolute top-4 right-4 ${p.status === 'إيجار' ? 'bg-royal' : 'bg-emerald-600'} text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg">${p.status}</span>
+      <span class="absolute top-4 left-4 badge-gold text-sm font-black px-4 py-2 rounded-lg shadow-lg">كود: ${p.code}</span>
+    </div>
+
+    <div class="flex justify-between items-start gap-4 mb-4 border-b pb-4">
+      <h2 class="text-2xl font-black text-navy">${p.title}</h2>
+      <span class="text-royal font-black text-2xl whitespace-nowrap">${p.price}</span>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+      <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs text-slate-500 block">المساحة</span><b class="text-navy">${p.area} م²</b></div>
+      <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs text-slate-500 block">الغرف</span><b class="text-navy">${p.rooms || '—'}</b></div>
+      <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs text-slate-500 block">الحمامات</span><b class="text-navy">${p.bathrooms || '—'}</b></div>
+      <div class="bg-slate-50 p-3 rounded-xl text-center"><span class="text-xs text-slate-500 block">المدينة</span><b class="text-navy">${p.city}</b></div>
+    </div>
+
+    <h3 class="font-black text-navy mb-2">التفاصيل الكاملة</h3>
+    <p class="text-slate-700 bg-slate-50 p-4 rounded-xl mb-5 leading-relaxed">${p.desc}</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <a href="https://wa.me/201070031535?text=${waMsg}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition">
+        <i class="fa-brands fa-whatsapp text-xl"></i> واتساب
+      </a>
+      <a href="tel:01070031535" class="bg-navy hover:bg-royal text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition">
+        <i class="fa-solid fa-phone"></i> اتصال
+      </a>
+      <button onclick="toggleFavorite('${key}'); this.innerHTML='<i class=\\'fa-heart ${isFav ? 'fa-regular' : 'fa-solid'} ml-1\\'></i>';" class="bg-gold hover:bg-gold-600 text-navy font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition">
+        <i class="fa-heart ${isFav ? 'fa-solid' : 'fa-regular'}"></i> ${isFav ? 'في المفضلة' : 'حفظ'}
+      </button>
+    </div>
+  `;
+
+  document.getElementById('propertyDetailsModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetailsModal() {
+  document.getElementById('propertyDetailsModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+/* ===== Reviews Slider ===== */
+function initReviews() {
+  renderReview();
+  reviewInterval = setInterval(nextReview, 6000);
+}
+function renderReview() {
+  if (currentReviewIndex >= reviewData.length) currentReviewIndex = 0;
+  const r = reviewData[currentReviewIndex];
+  document.getElementById('reviewSliderBox').innerHTML = `
+    <div class="animate-[fadeSlide_.5s_ease]">
+      <div class="flex gap-1 text-gold text-lg mb-4">
+        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+      </div>
+      <p class="text-xl md:text-2xl leading-relaxed text-white mb-6">"${r.comment}"</p>
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-gold text-navy font-black text-xl flex items-center justify-center">${r.name[0]}</div>
+        <div>
+          <b class="block text-white">${r.name}</b>
+          <span class="text-xs text-slate-300">عميل الخبير العقاري</span>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('reviewCounterText').textContent = `${currentReviewIndex + 1} / ${reviewData.length}`;
+}
+function nextReview() { currentReviewIndex = (currentReviewIndex + 1) % reviewData.length; renderReview(); }
+function prevReview() { currentReviewIndex = (currentReviewIndex - 1 + reviewData.length) % reviewData.length; renderReview(); }
+
+/* ===== Mobile Nav ===== */
+function toggleMobileNav() {
+  document.getElementById('mobileNav').classList.toggle('hidden');
+}
+
+/* ===== Auth Modal ===== */
+function openAuthModal(isSignup = false) {
+  authMode = isSignup ? 'signup' : 'login';
+  applyAuthMode();
+  document.getElementById('authModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeAuthModal() {
+  document.getElementById('authModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+function toggleAuthMode() {
+  authMode = authMode === 'signup' ? 'login' : 'signup';
+  applyAuthMode();
+}
+function applyAuthMode() {
+  const isSignup = authMode === 'signup';
+  document.getElementById('authTitle').textContent = isSignup ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
+  document.getElementById('authSubmitText').textContent = isSignup ? 'إنشاء الحساب' : 'تسجيل الدخول';
+  document.getElementById('authModeText').textContent = isSignup ? 'لديك حساب بالفعل؟' : 'ليس لديك حساب؟';
+  document.getElementById('authNameField').classList.toggle('hidden', !isSignup);
+  document.getElementById('authPhoneField').classList.toggle('hidden', !isSignup);
+  document.getElementById('authName').required = isSignup;
+  document.getElementById('authPhone').required = isSignup;
+}
+
+async function handleAuth(e) {
+  e.preventDefault();
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const name = document.getElementById('authName').value.trim();
+  const phone = document.getElementById('authPhone').value.trim();
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+
+  try {
+    if (authMode === 'signup') {
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({ displayName: name });
+      await db.ref('users/' + cred.user.uid).set({
+        name, email, phone,
+        createdAt: new Date().toLocaleDateString('ar-EG'),
+        interested: []
+      });
+      showToast('تم إنشاء حسابك بنجاح! 🎉');
+    } else {
+      await auth.signInWithEmailAndPassword(email, password);
+      showToast('مرحباً بك مجدداً! 👋');
+    }
+    closeAuthModal();
+  } catch (err) {
+    const msgs = {
+      'auth/email-already-in-use': 'البريد مسجل بالفعل، جرب تسجيل الدخول',
+      'auth/invalid-email': 'البريد الإلكتروني غير صحيح',
+      'auth/weak-password': 'كلمة المرور ضعيفة (6 أحرف على الأقل)',
+      'auth/invalid-credential': 'البريد أو كلمة المرور غير صحيحة',
+      'auth/network-request-failed': 'تحقق من الإنترنت'
+    };
+    showToast(msgs[err.code] || 'حدث خطأ، حاول مرة أخرى');
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
+/* ===== Auth State ===== */
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    const snap = await db.ref('users/' + user.uid).once('value');
+    const profile = snap.val() || {};
+    currentUser = {
+      uid: user.uid,
+      name: profile.name || user.displayName || 'مستخدم',
+      email: user.email || '',
+      phone: profile.phone || '',
+    };
+    updateDrawerUI();
+  } else {
+    currentUser = null;
+    updateDrawerUI();
+  }
+});
+
+/* ===== User Drawer ===== */
+function toggleUserDrawer() {
+  const drawer = document.getElementById('userDrawer');
+  const backdrop = document.getElementById('drawerBackdrop');
+  drawer.classList.toggle('closed');
+  backdrop.classList.toggle('closed');
+  document.body.style.overflow = drawer.classList.contains('closed') ? '' : 'hidden';
+  if (!drawer.classList.contains('closed')) updateDrawerUI();
+}
+
+function closeDrawerAndAuth(signup = false) {
+  toggleUserDrawer();
+  setTimeout(() => openAuthModal(signup), 300);
+}
+
+function switchDrawerPage(page, btn) {
+  document.querySelectorAll('.drawer-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.drawer-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('dpage-' + page)?.classList.add('active');
+  btn?.classList.add('active');
+}
+
+function updateDrawerUI() {
+  const loggedIn = !!currentUser;
+  document.getElementById('drawerLoggedOut').classList.toggle('hidden', loggedIn);
+  document.getElementById('drawerLoggedIn').classList.toggle('hidden', !loggedIn);
+
+  if (loggedIn) {
+    document.getElementById('drawerName').textContent = currentUser.name;
+    document.getElementById('drawerEmail').textContent = currentUser.email;
+    document.getElementById('drawerAvatar').textContent = currentUser.name.charAt(0);
+    
+    document.getElementById('pfName').value = currentUser.name;
+    document.getElementById('pfPhone').value = currentUser.phone;
+    document.getElementById('pfEmail').value = currentUser.email;
+    
+    document.getElementById('statFav').textContent = wishlist.length;
+    document.getElementById('favCountBadge').textContent = wishlist.length;
+    document.getElementById('loginBtn')?.classList.add('hidden');
+    
+    renderDrawerFavorites();
+  } else {
+    document.getElementById('drawerName').textContent = 'مرحباً بك';
+    document.getElementById('drawerEmail').textContent = 'سجل دخولك للوصول لحسابك';
+    document.getElementById('drawerAvatar').textContent = '؟';
+    document.getElementById('loginBtn')?.classList.remove('hidden');
+  }
+}
+
+function renderDrawerFavorites() {
+  const container = document.getElementById('drawerFavoritesList');
+  if (!wishlist.length) {
+    container.innerHTML = '<div class="text-center text-sm text-slate-400 py-8">لم تضف أي عقارات للمفضلة بعد</div>';
+    return;
+  }
+  container.innerHTML = '';
+  wishlist.forEach(key => {
+    const p = allProperties.find(x => x.key === key);
+    if (!p) return;
+    const img = p.images?.[0];
+    container.innerHTML += `
+      <div class="bg-white border border-slate-200 rounded-xl p-2.5 flex items-center gap-2.5 cursor-pointer hover:border-gold transition" onclick="openPropertyDetails('${p.key}')">
+        <img src="${img}" class="w-14 h-14 rounded-lg object-cover shrink-0">
+        <div class="flex-1 min-w-0">
+          <h6 class="font-bold text-xs text-navy truncate">${p.title}</h6>
+          <span class="text-[11px] text-royal font-bold">${p.price}</span>
+        </div>
+        <button onclick="event.stopPropagation(); toggleFavorite('${p.key}')" class="text-red-500 hover:text-red-700 p-1">
+          <i class="fa-solid fa-heart-crack text-sm"></i>
+        </button>
+      </div>
+    `;
+  });
+}
+
+function handleLogout() {
+  auth.signOut().then(() => {
+    toggleUserDrawer();
+    showToast('تم تسجيل الخروج بنجاح');
+  });
+}
+
+/* ===== Toast ===== */
+function showToast(msg) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'bg-navy text-white p-3.5 rounded-xl shadow-2xl flex items-center gap-3 text-sm font-semibold animate-[modalPop_.3s]';
+  toast.style.borderRight = '4px solid #D4AF37';
+  toast.innerHTML = `<i class="fa-solid fa-circle-check text-gold text-lg"></i><span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.transition = 'opacity .4s';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 400);
+  }, 3200);
+}
+
+/* ===== Close modals on ESC ===== */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeDetailsModal();
+    closeAuthModal();
+    if (!document.getElementById('userDrawer').classList.contains('closed')) toggleUserDrawer();
+  }
+});
+</script>
+
+</body>
+</html>
